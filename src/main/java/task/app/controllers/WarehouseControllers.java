@@ -16,7 +16,7 @@ public class WarehouseControllers {
     @GET
     @Path("/ping")
     public Response ping() {
-        return Response.ok().entity("Service online").build();
+        return Response.ok().entity("Hello Warh").build();
     }
 
 
