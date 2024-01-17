@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WarehouseEntity {
+public class Warehouse {
         private int id;
         private String name;
         private String addressLine1;
