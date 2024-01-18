@@ -2,18 +2,23 @@ package task.app.controllers;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import task.app.daos.WarehouseDAOImpl;
 import task.app.exceptions.WarehouseNotFoundException;
 import task.app.models.Warehouse;
+import task.app.models.WarehousesResponse;
 import task.app.utils.Constants;
+
+import java.util.List;
 
 @Path("/warehouses")
 public class WarehouseController {
@@ -38,6 +43,26 @@ public class WarehouseController {
         } else {
             return Response.ok().entity(warehouse).build();
         }
+    }
+
+    @GET
+    @Path("/filter")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findWarehouses(@QueryParam("name") String name,
+                                   @QueryParam("address") String address,
+                                   @QueryParam("city") String city,
+                                   @QueryParam("state") String state,
+                                   @QueryParam("country") String country,
+                                   @QueryParam("quantity") String quantity,
+                                   @DefaultValue("10") @QueryParam("limit") int limit,
+                                   @QueryParam("offset") int offset,
+                                   @DefaultValue("id") @QueryParam("sort") String sort) {
+        List<Warehouse> warehouses = warehouseDAOImpl.getWarehousesByFilter(
+                name, address, city, state, country, quantity, limit, offset, sort);
+        int totalWarehouses = warehouses.size();
+        return Response.ok()
+                .entity(new WarehousesResponse(warehouses, totalWarehouses))
+                .build();
     }
 
     @PUT

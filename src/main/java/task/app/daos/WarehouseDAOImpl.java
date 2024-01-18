@@ -9,6 +9,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WarehouseDAOImpl implements WarehouseDOA {
     private final String jdbcURL;
@@ -104,6 +106,67 @@ public class WarehouseDAOImpl implements WarehouseDOA {
             disconnect();
         }
         return warehouse;
+    }
+
+    public List<Warehouse> getWarehousesByFilter(
+            String name, String address, String city,
+            String state, String country, String quantity,
+            int limit, int offset, String sort) {
+
+        List<Warehouse> warehouses = new ArrayList<>();
+        String sql = "SELECT * FROM warehouse WHERE " +
+                "(name LIKE ? OR ? IS NULL) AND " +
+                "(address_line_1 LIKE ? OR ? IS NULL) AND " +
+                "(city LIKE ? OR ? IS NULL) AND " +
+                "(state LIKE ? OR ? IS NULL) AND " +
+                "(country LIKE ? OR ? IS NULL) AND " +
+                "(inventory_quantity LIKE ? OR ? IS NULL) " +
+                "ORDER BY ? LIMIT ? OFFSET ?";
+
+        try {
+            connect();
+            PreparedStatement statement = jdbcConn.prepareStatement(sql);
+
+            statement.setString(1, name);
+            statement.setString(2, name);
+            statement.setString(3, address);
+            statement.setString(4, address);
+            statement.setString(5, city);
+            statement.setString(6, city);
+            statement.setString(7, state);
+            statement.setString(8, state);
+            statement.setString(9, country);
+            statement.setString(10, country);
+            statement.setString(11, quantity);
+            statement.setString(12, quantity);
+            statement.setString(13, sort);
+            statement.setInt(14, limit);
+            statement.setInt(15, offset);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Integer id = resultSet.getInt("id");
+                String nameWarehouse = resultSet.getString("name");
+                String addressLine1 = resultSet.getString("address_line_1");
+                String addressLine2 = resultSet.getString("address_line_2");
+                String cityWarehouse = resultSet.getString("city");
+                String stateWarehouse = resultSet.getString("state");
+                String countryWarehouse = resultSet.getString("country");
+                int inventoryQuantity = resultSet.getInt("inventory_quantity");
+
+                warehouses.add(new Warehouse(id, nameWarehouse, addressLine1, addressLine2, cityWarehouse,
+                        stateWarehouse, countryWarehouse, inventoryQuantity));
+            }
+
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            disconnect();
+        }
+        return warehouses;
     }
 
     public void updateWarehouse(Integer id, Warehouse warehouse) throws WarehouseNotFoundException {
